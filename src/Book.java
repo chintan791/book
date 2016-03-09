@@ -1,5 +1,5 @@
 
-public class book {
+public class Book {
 
 
 
@@ -11,9 +11,9 @@ public class book {
 		private boolean isInStock;
 		private int stock;
 		
-		book(){}
+		Book(){}
 
-		public book(String firstBook, String firstAuthor, String firstDescription, double firstPrice,boolean firstIsInStock, int firstStock) {
+		public Book(String firstBook, String firstAuthor, String firstDescription, double firstPrice,boolean firstIsInStock, int firstStock) {
 		   bookTitle= firstBook;
 		   author = firstAuthor;
 		   description= firstDescription;
