@@ -1,120 +1,142 @@
+//Bookdatabase
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 public class BookDatabase {
-
+	static Connection con = null;
+	private Statement stmt = null;
+	private ResultSet rs = null;
 	private String Title;
 	private String author;
 	private String description;
 	private double price;
-//	private String book;
-	
-	
-	BookDatabase(){}
-	
-	public BookDatabase(String aBook, String aAuthor, String aDescription, double aPrice, String finalBook) {
-		   setTitle(aBook);
-		   setAuthor(aAuthor);
-		   setDescription(aDescription);
-		   setPrice(aPrice);
-	//	   book = finalBook;
-	
-		}
+	//	private String book;
 
-	public String getTitle() {
-		return Title;
-	}
-
-	public void setTitle(String title) {
-		Title = title;
-	}
-
-	public String getAuthor() {
-		return author;
-	}
-
-	public void setAuthor(String author) {
-		this.author = author;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	public double getPrice() {
-		return price;
-	}
-
-	public void setPrice(double price) {
-		this.price = price;
-	}
-	
-	
-	public String BookData(String SKU)
+	public Book getBook(String sku)
 	{
-		
-	
-	   if (SKU.equals("Java1001"))
-	   {
-		Title = "Head First Java";
-		author = "Kathy Sierra";
-		description = "Easy to read java workbook";
-		price= 47.50;
-		
-		return ( "Title: " + Title + "author: "+ author + "Description: "+ description + "Price " + price );
-	   }
-	   
-	   else if (SKU.equals("Java1002"))
-	   {
-		   Title = "Thinking in Java";
-			author = "ruce Eckel";
-			description = "Details about Java under the hood";
-			price= 20.00;
-			
-			return ("Title: " + Title + "author: "+ author + "Description: "+ description + "Price " + price );
-	   }
-	   
-	   else if (SKU.equals("Orcl1003"))
-	   {
-		   Title = "oce: Oracle certified Professional Java SE";
-			author = "jEANNE bOYARSKY";
-			description = "Everything u need to know in one place";
-			price= 45.00;
-			
-			return ("Title: " + Title + "author: "+ author + "Description: "+ description + "Price " + price );
-	   }
-	   
-	   else if (SKU.equals("Python1004"))
-	   {
-		   Title = "Automate the boring stuff with python";
-			author = "Al Sweigart";
-			description = "Fun with Python";
-			price= 10.50;
-			
-			return ("Title: " + Title + "author: "+ author + "Description: "+ description + "Price " + price );   
-	   }
-	   else if (SKU.equals("Zombie1005"))
-	   {
-		   Title = "The markers guide to zombie apocalypse";
-			author = "Simon Monk";
-			description = "Defend your base with simple circuits, Arduino, and Rasberry Pi";
-			price= 16.50;
-			
-			return ("Title: " + Title + "author: "+ author + "Description: "+ description + "Price " + price );
-	   }
-	   else if (SKU.equals("Rasp1006"))
-	   {
-		   Title = "Rasberry pie- projects for the evil genius";
-			author = "Donald Norris";
-			description = "A dozen fun projects for Raspberry pie";
-			price= 14.75;
-			
-			return ("Title: " + Title + "  author: "+ author + "  Description: "+ description + "  Price " + price );
-	   }
-	   else return"";
-		
+		Book book = new Book();
+		Connection con = null;
+		Statement stmt = null;
+		ResultSet rs = null;
+		String sql = "select * from books where sku='"+sku+"'";
+		try{
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+			con = DriverManager.getConnection("jdbc:oracle:thin:ora1/ora1@localhost:1521:orcl");
+			stmt = con.createStatement();
+			rs = stmt.executeQuery(sql);
+			while(rs.next()){
+				book.setAuthor(rs.getString("author"));
+				book.setBookTitle(rs.getString("title"));
+				book.setDescription(rs.getString("description"));
+
+				book.setInStock(true);
+
+			}
+		}catch (SQLException e) {
+			e.printStackTrace();
+		}catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				rs.close();
+				stmt.close();
+				con.close();
+			}catch(SQLException e){
+				e.printStackTrace();
+			}
+		}
+		return book;
 	}
-	
+
+	public void connect(){
+		try{
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+			con = DriverManager.getConnection("jdbc:oracle:thin:ora1/ora1@localhost:1521:orcl");
+			stmt = con.createStatement();
+		}catch (SQLException e) {
+			e.printStackTrace();
+		}catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		finally {
+			try {
+				//	rs.close();
+				stmt.close();
+				//	con.close();
+			}catch(SQLException e){
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public int updateBook(String sku, String Title, String author){
+		int cnt=0;
+		try{
+			connect();
+			String sql="Update Books SET Title= ?, author=? where sku=?";
+			PreparedStatement pstmt = con.prepareStatement(sql);
+			pstmt.setString(1,Title);
+			pstmt.setString(2, author);
+			pstmt.setString(3,sku);
+			cnt=pstmt.executeUpdate();
+			con.close();
+		} catch(SQLException e){
+			e.printStackTrace();
+		}
+		return cnt;
+	}
+
+
+	public int insert(Book book){
+		int cnt=0;
+		try{
+			connect();
+			String insertProduct = "INSERT into books "+ 
+					"(sku, Title, author)" + "VALUES (?, ?, ?)";
+			PreparedStatement ps= con.prepareStatement(insertProduct);
+			ps.setString(1,book.getSku());
+			ps.setString(2,book.getBookTitle());
+			ps.setString(3, book.getAuthor());
+			cnt = ps.executeUpdate();
+		} catch(SQLException e){
+			e.printStackTrace();
+		}
+		return cnt;
+	} 
+
+	public int delete(String Sku){
+		int cnt=0;
+		try{
+			connect();
+			String deleteProduct = "DELETE FROM books "+ 
+					"WHERE Sku= ?";
+			PreparedStatement ps= con.prepareStatement(deleteProduct);
+			ps.setString(1,Sku);
+			cnt = ps.executeUpdate();
+		} catch(SQLException e){
+			e.printStackTrace();
+		}
+		return cnt;
+	} 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,9 +1,9 @@
-
+//Book 
 public class Book {
 
 
 
-		
+		private String sku;
 		private String bookTitle;
 		private String author;
 		private String description;
@@ -13,8 +13,9 @@ public class Book {
 		
 		Book(){}
 
-		public Book(String firstBook, String firstAuthor, String firstDescription, double firstPrice,boolean firstIsInStock, int firstStock) {
-		   bookTitle= firstBook;
+		public Book(String sku1, String firstBook, String firstAuthor, String firstDescription, double firstPrice,boolean firstIsInStock, int firstStock) {
+		   setSku(sku1);
+			bookTitle= firstBook;
 		   author = firstAuthor;
 		   description= firstDescription;
 		   price=firstPrice; 
@@ -99,6 +100,14 @@ public class Book {
 		
 	
 	
+		}
+
+		public String getSku() {
+			return sku;
+		}
+
+		public void setSku(String sku) {
+			this.sku = sku;
 		}
 
 	}
